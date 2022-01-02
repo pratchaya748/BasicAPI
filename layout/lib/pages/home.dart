@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:layout/pages/detail.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
 
 class HomePage extends StatefulWidget {
   // const HomePage({ Key? key }) : super(key: key);
@@ -19,16 +21,17 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: FutureBuilder(builder: (context, snapshot){
-          var data = json.decode(snapshot.data.toString()); //snapshot รับค่าจาก future เก็บในลักษณะ snapshot = [{},{},{}]
+        child: FutureBuilder(builder: (context,AsyncSnapshot snapshot){
+          // var data = json.decode(snapshot.data.toString()); //snapshot รับค่าจาก future เก็บในลักษณะ snapshot = [{},{},{}]
           return ListView.builder(
             itemBuilder: (BuildContext context, int index) {
-              return MyBox(data[index]['title'], data[index]['subtitle'], data[index]['image'], data[index]['detail']);
+              return MyBox(snapshot.data[index]['title'], snapshot.data[index]['subtitle'], snapshot.data[index]['image'], snapshot.data[index]['detail']);
             },
-            itemCount: data.length,);
+            itemCount: snapshot.data.length,);
 
         },
-        future: DefaultAssetBundle.of(context).loadString('assets/data.json'), //ฟังก์ชันนี้จะดึงไฟล์ข้อความใน json มาวางในนี้เลย
+        future: getData(),
+        // future: DefaultAssetBundle.of(context).loadString('assets/data.json'), //ฟังก์ชันนี้จะดึงไฟล์ข้อความใน json มาวางในนี้เลย
         
         )
       ),
@@ -91,5 +94,13 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  Future getData() async {
+    // https://raw.githubusercontent.com/pratchaya748/BasicAPI/main/data.json
+    var url = Uri.https('raw.githubusercontent.com','/pratchaya748/BasicAPI/main/data.json');
+    var response = await http.get(url);
+    var result = json.decode(response.body);
+    return result;
   }
 }
